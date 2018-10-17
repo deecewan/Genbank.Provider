@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <FscToolPath>/Library/Frameworks/Mono.framework/Versions/Current/Commands</FscToolPath>
+    <FscToolExe>fsharpc</FscToolExe>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <Target Name="PreBuild" AfterTargets="PreBuildEvent">
+    <Exec Command="copy /Users/david/.nuget/packages/forest.filewriter/1.0.0-alpha.1/lib/netstandard2.0/Forest.dll bin\Debug\netcoreapp2.0\" />
+  </Target>
+  <ItemGroup>
+    <Compile Include="UnitTest1.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Genbank.DesignTime\Genbank.DesignTime.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

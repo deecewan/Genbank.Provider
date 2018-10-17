@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <FscToolPath>/Library/Frameworks/Mono.framework/Versions/Current/Commands</FscToolPath>
+    <FscToolExe>fsharpc</FscToolExe>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../lib/ProvidedTypes.fsi" />
+    <Compile Include="../lib/ProvidedTypes.fs" />
+    <Compile Include="Logger.fs" />
+    <Compile Include="Cache.fs" />
+    <Compile Include="Helpers.fs" />
+    <Compile Include="TypeGenerators.fs" />
+    <Compile Include="Library.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Genbank.RunTime\Genbank.RunTime.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
