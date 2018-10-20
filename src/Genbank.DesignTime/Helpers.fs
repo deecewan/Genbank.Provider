@@ -32,14 +32,6 @@ type FTPFileItem =
       name = child
       location = this.location + child + "/" }
 
-type AssemblyFile =
-  | AnnotationHashes
-  | GenbankData
-
-type AssemblyRecord =
-  { name: string
-    files: IDictionary<AssemblyFile, FTPFileItem> }
-
 let BaseFile =
   { name = ""
     variant = Directory
@@ -60,6 +52,7 @@ let filenamesFromDirectories (parent: FTPFileItem) (items: string [] list) =
 
 let downloadFileFromFTP(url: string) = Cache.cache.LoadFile(url)
 
+
 let loadDirectoryFromFTP(item: FTPFileItem) =
   let stream = Cache.cache.LoadDirectory(item.location)
   let res = (new StreamReader(stream)).ReadToEnd()
@@ -70,12 +63,10 @@ let loadDirectoryFromFTP(item: FTPFileItem) =
        s.Split([| ' '; '\t'; '\n' |], StringSplitOptions.RemoveEmptyEntries))
   |> filenamesFromDirectories(item)
 
-let getAssemblyDetails(item: FTPFileItem) =
-  { // these are the only files we're actually interested in here
-    name = item.name
-    files =
-      dict [ AnnotationHashes, item.childFile("annotation_hashes.txt")
-             GenbankData, item.childFile(item.name + "_genomic.gbff.gz") ] }
+type AssemblyLocation = 
+  { name: string
+    file: string
+  }
 
 let getLatestAssembliesFor(genome: FTPFileItem) =
   let latestItem = genome.childDirectory("latest_assembly_versions")
@@ -88,7 +79,7 @@ let getLatestAssembliesFor(genome: FTPFileItem) =
         latestItem.location
     logger.Error ("%s") message
     message |> failwith
-  items |> List.map getAssemblyDetails
+  items |> List.map(fun item -> { name = item.name; file = item.childFile(item.name + "_genomic.gbff.gz").location })
 
 let getChildDirectories(item: FTPFileItem) =
   logger.Log ("Loading from URL: %s") item.location
@@ -100,3 +91,5 @@ let getChildDirectories(item: FTPFileItem) =
 
 let loadGenomesForVariant(variant: FTPFileItem) = variant |> getChildDirectories
 let loadGenomeVariants() = getChildDirectories(BaseFile)
+
+let (|Singleton|) = function [l] -> l | _ -> failwith "Parameter mismatch"

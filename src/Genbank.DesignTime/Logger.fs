@@ -3,7 +3,7 @@ module Genbank.DesignTime.Logger
 open System.IO
 open System
 
-let console = new Forest.ConsoleWriter.ConsoleWriter("unused :|", false)
+let console = new Forest.ConsoleWriter.ConsoleWriter()
 let logFolder =
   Path.Combine
     (Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Logs", 
