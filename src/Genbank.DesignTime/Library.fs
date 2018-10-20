@@ -10,18 +10,7 @@ type GenbankProvider(config: TypeProviderConfig) as this =
   let ns = "Genbank.Provider"
   let asm = Assembly.GetExecutingAssembly()
   
-  let createTypes() =
-    let metaType = ProvidedTypeDefinition(asm, ns, "Meta", Some typeof<obj>)
-    let metaAuthorProp =
-      ProvidedProperty
-        ("Author", typeof<string>, isStatic = true, 
-         getterCode = (fun args -> <@@ "David Buchan-Swanson" @@>))
-    metaType.AddMember(metaAuthorProp)
-    Helpers.loadGenomeVariants()
-    |> List.map(TypeGenerators.createGenomeVariantType(asm, ns))
-    |> List.append([ metaType ])
-  
-  do this.AddNamespace(ns, createTypes())
+  do this.AddNamespace(ns, TypeGenerators.createTaxaTypes(asm, ns))
 
 [<assembly:TypeProviderAssembly>]
 do ()

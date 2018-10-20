@@ -8,6 +8,7 @@
     <Compile Include="../lib/ProvidedTypes.fs" />
     <Compile Include="Logger.fs" />
     <Compile Include="Cache.fs" />
+    <Compile Include="FTP.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="TypeGenerators.fs" />
     <Compile Include="Library.fs" />

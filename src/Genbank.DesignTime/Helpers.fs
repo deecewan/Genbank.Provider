@@ -1,77 +1,23 @@
 module Genbank.DesignTime.Helpers
 
-open System
-open System.Net
-open System.Collections.Generic
 open System.IO
 
 let logger = Logger.createChild (Logger.logger) ("Helpers")
 
-type FileType =
-  | Directory
-  | File
-  | Symlink
-
-type FTPFileItem =
-  { variant: FileType
-    name: string
-    location: string }
-  
-  member this.childFile child =
-    { variant = File
-      name = child
-      location = this.location + child }
-  
-  member this.childSymlink child =
-    { variant = Symlink
-      name = child
-      location = this.location + child + "/" }
-  
-  member this.childDirectory child =
-    { variant = Directory
-      name = child
-      location = this.location + child + "/" }
-
-let BaseFile =
+let BaseFile: FTP.FileItem =
   { name = ""
-    variant = Directory
+    variant = FTP.Directory
     location = "ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/" }
-
-let filenamesFromDirectories (parent: FTPFileItem) (items: string [] list) =
-  [ for i in items do
-      if i.Length > 1 then 
-        let fileType: FileType =
-          if i.[0].StartsWith("d") then Directory
-          elif i.[0].StartsWith("l") then Symlink
-          else File
-        yield match fileType with
-              // get the symlink name, not it's location
-              | Symlink -> parent.childSymlink(Seq.item (Seq.length(i) - 3) (i))
-              | Directory -> parent.childDirectory(Seq.last(i))
-              | File -> parent.childFile(Seq.last(i)) ]
-
-let downloadFileFromFTP(url: string) = Cache.cache.LoadFile(url)
-
-
-let loadDirectoryFromFTP(item: FTPFileItem) =
-  let stream = Cache.cache.LoadDirectory(item.location)
-  let res = (new StreamReader(stream)).ReadToEnd()
-  res.Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
-  |> Seq.toList
-  |> List.map
-       (fun s -> 
-       s.Split([| ' '; '\t'; '\n' |], StringSplitOptions.RemoveEmptyEntries))
-  |> filenamesFromDirectories(item)
 
 type AssemblyLocation = 
   { name: string
     file: string
   }
 
-let getLatestAssembliesFor(genome: FTPFileItem) =
+let getLatestAssembliesFor(genome: FTP.FileItem) =
   let latestItem = genome.childDirectory("latest_assembly_versions")
   // in the latest assembly location, there should only ever be one item
-  let items = latestItem |> loadDirectoryFromFTP
+  let items = latestItem |> FTP.loadDirectory
   let length = List.length(items)
   if length = 0 then 
     let message =
@@ -81,15 +27,19 @@ let getLatestAssembliesFor(genome: FTPFileItem) =
     message |> failwith
   items |> List.map(fun item -> { name = item.name; file = item.childFile(item.name + "_genomic.gbff.gz").location })
 
-let getChildDirectories(item: FTPFileItem) =
-  logger.Log ("Loading from URL: %s") item.location
-  loadDirectoryFromFTP(item)
-  |> List.filter(fun f -> 
-       match f.variant with
-       | Directory -> true
-       | _ -> false)
 
-let loadGenomesForVariant(variant: FTPFileItem) = variant |> getChildDirectories
-let loadGenomeVariants() = getChildDirectories(BaseFile)
+let loadGenomesForTaxon(variant: FTP.FileItem) = variant |> FTP.getChildDirectories
+let loadTaxa() = FTP.getChildDirectories(BaseFile)
+
+let loadGenbankFile (location: string) callback =
+  logger.Log ("Location of Genbank File: %s") location
+  use file = FTP.downloadFile(location)
+  use stream =
+    file
+    |> fun c ->
+      new Compression.GZipStream(c, Compression.CompressionMode.Decompress)
+  let s =
+    Bio.IO.GenBank.GenBankParser().Parse(stream) |> Seq.cast<Bio.ISequence>
+  callback s
 
 let (|Singleton|) = function [l] -> l | _ -> failwith "Parameter mismatch"
