@@ -3,9 +3,9 @@ source https://api.nuget.org/v3/index.json
 
 framework: netstandard2.0
 nuget FSharp.Core 4.3.4
-nuget Forest 1.0.0-alpha.2 prerelease
-nuget Forest.ConsoleWriter 1.0.0-alpha.2 prerelease
-nuget Forest.FileWriter 1.0.0-alpha.2 prerelease
+nuget Forest 1.0.0-alpha.4 prerelease
+nuget Forest.ConsoleWriter 1.0.0-alpha.4 prerelease
+nuget Forest.FileWriter 1.0.0-alpha.4 prerelease
 nuget FsUnit 3.2.0
 nuget Microsoft.NET.Test.Sdk 15.7.2
 nuget NetBio.Core 3.0.0-alpha prerelease

@@ -14,6 +14,6 @@ bin
 # End of https://www.gitignore.io/api/fsharp
 
 # paket
-.paket/
 !.paket/paket.bootstrapper.exe
+.paket/
 packages/
