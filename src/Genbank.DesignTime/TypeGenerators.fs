@@ -4,6 +4,7 @@ open ProviderImplementation.ProvidedTypes
 open System.Globalization
 open System.Reflection
 open Genbank.RunTime
+open Bio.IO.GenBank
 
 let logger = Logger.createChild (Logger.logger) "TypeGenerators"
 
@@ -24,6 +25,20 @@ let logger = Logger.createChild (Logger.logger) "TypeGenerators"
 //    ]
 //  )
 //  t
+
+let createTestType (assembly: Helpers.AssemblyLocation) () =
+  let t = ProvidedTypeDefinition(assembly.name, Some(typeof<obj>), hideObjectMethods = true, nonNullable = true)
+  Helpers.loadGenbankFile(assembly.file)(fun items ->
+    t.AddMember(ProvidedProperty("Loci", typeof<LociMap>, isStatic = true, getterCode = (fun _ -> <@@ LociMap(items) @@>)))
+    t.AddMembers(items |> Seq.map(fun item ->
+      let data = item.Metadata.Item("GenBank") :?> GenBankMetadata
+      let prop = ProvidedProperty(data.Locus.Name, typeof<GenBankMetadata>, isStatic = true, getterCode = (fun _ -> <@@ data @@>))
+      let doc = sprintf "<summary>%s. %s. Keywords: %s</summary>" data.Locus.Name data.Definition data.Keywords
+      prop.AddXmlDoc(doc)
+      prop
+    ) |> Seq.toList)
+  )
+  t
 
 let createLociType (assembly: Helpers.AssemblyLocation) () =
   let name = assembly.name
@@ -47,7 +62,8 @@ let createAssemblyType genome () =
               hideObjectMethods = true,
               nonNullable = true
             )
-    t.AddMemberDelayed(createLociType(assembly))
+    t.AddXmlDoc(sprintf("<summary>The genome for %s. Contains all loci for this genome.</summary>")(genome.name))
+    t.AddMemberDelayed(createTestType(assembly))
     t
   )
 
