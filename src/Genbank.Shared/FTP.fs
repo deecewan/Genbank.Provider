@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module Genbank.DesignTime.FTP
+module Genbank.Shared.FTP
 
 open System.IO
 open System
@@ -18,12 +18,12 @@ type FileItem =
     { variant = File
       name = child
       location = this.location + child }
-  
+
   member this.childSymlink child =
     { variant = Symlink
       name = child
       location = this.location + child + "/" }
-  
+
   member this.childDirectory child =
     { variant = Directory
       name = child
@@ -35,7 +35,7 @@ let downloadFile(url: string) = Cache.cache.LoadFile(url)
 
 let filenamesFromDirectories (parent: FileItem) (items: string [] list) =
   [ for i in items do
-      if i.Length > 1 then 
+      if i.Length > 1 then
         let fileType: File =
           if i.[0].StartsWith("d") then Directory
           elif i.[0].StartsWith("l") then Symlink
@@ -52,14 +52,14 @@ let loadDirectory(item: FileItem) =
   res.Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
   |> Seq.toList
   |> List.map
-       (fun s -> 
+       (fun s ->
        s.Split([| ' '; '\t'; '\n' |], StringSplitOptions.RemoveEmptyEntries))
   |> filenamesFromDirectories(item)
 
 let getChildDirectories(item: FileItem) =
   logger.Log ("Loading from URL: %s") item.location
   loadDirectory(item)
-  |> List.filter(fun f -> 
+  |> List.filter(fun f ->
        match f.variant with
        | Directory -> true
        | _ -> false)

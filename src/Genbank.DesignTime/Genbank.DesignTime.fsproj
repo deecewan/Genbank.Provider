@@ -13,13 +13,12 @@
       <Link>paket-files/ProvidedTypes.fs</Link>
     </Compile>
     <Compile Include="Logger.fs" />
-    <Compile Include="Cache.fs" />
-    <Compile Include="FTP.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="TypeGenerators.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Genbank.Shared\Genbank.Shared.fsproj" />
     <ProjectReference Include="..\Genbank.RunTime\Genbank.RunTime.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

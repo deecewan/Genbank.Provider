@@ -1,6 +1,7 @@
 module Genbank.DesignTime.Helpers
 
 open System.IO
+open Genbank.Shared
 
 let logger = Logger.createChild (Logger.logger) ("Helpers")
 
@@ -31,14 +32,3 @@ let getLatestAssembliesFor(genome: FTP.FileItem) =
 
 let loadGenomesForTaxon(variant: FTP.FileItem) = variant |> FTP.getChildDirectories
 let loadTaxa() = FTP.getChildDirectories(BaseFile)
-
-let loadGenbankFile (location: string) callback =
-  logger.Log ("Location of Genbank File: %s") location
-  use file = FTP.downloadFile(location)
-  use stream =
-    file
-    |> fun c ->
-      new Compression.GZipStream(c, Compression.CompressionMode.Decompress)
-  let s =
-    Bio.IO.GenBank.GenBankParser().Parse(stream) |> Seq.cast<Bio.ISequence>
-  callback s
