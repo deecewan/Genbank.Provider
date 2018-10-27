@@ -17,7 +17,7 @@ type AssemblyLocation =
 
 let (|Singleton|) = function [l] -> l | _ -> failwith "Parameter mismatch"
 
-let getLatestAssembliesFor(genome: FTP.FileItem) =
+let loadAssembliesForGenome(genome: FTP.FileItem) =
   let latestItem = genome.childDirectory("latest_assembly_versions")
   // in the latest assembly location, there should only ever be one item
   let items = latestItem |> FTP.loadDirectory

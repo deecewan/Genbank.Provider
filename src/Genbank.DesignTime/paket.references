@@ -1,8 +1,8 @@
+NetBio.Core
+FSharp.Core
 Forest
 Forest.ConsoleWriter
 Forest.FileWriter
-NetBio.Core
-FSharp.Core
 
 File:ProvidedTypes.fsi
 File:ProvidedTypes.fs
