@@ -30,3 +30,8 @@ NUGET
     Texta (1.0.0-alpha.4)
       FSharp.Core (>= 4.3.4)
       NETStandard.Library (>= 2.0.3)
+GITHUB
+  remote: fsprojects/FSharp.TypeProviders.SDK
+    src/ProvidedTypes.fs (7d57cd409d7299592822713195924e42b2b7acde)
+    src/ProvidedTypes.fsi (7d57cd409d7299592822713195924e42b2b7acde)
+    src/ProvidedTypesTesting.fs (7d57cd409d7299592822713195924e42b2b7acde)

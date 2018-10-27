@@ -4,9 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <Target Name="PreBuild" AfterTargets="PreBuildEvent">
-    <Exec Command="copy /Users/david/.nuget/packages/forest.filewriter/1.0.0-alpha.1/lib/netstandard2.0/Forest.dll bin\Debug\netcoreapp2.0\" />
-  </Target>
   <ItemGroup>
     <Compile Include="UnitTest1.fs" />
   </ItemGroup>
