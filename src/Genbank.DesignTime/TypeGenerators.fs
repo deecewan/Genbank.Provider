@@ -8,62 +8,34 @@ open Bio.IO.GenBank
 
 let logger = Logger.createChild (Logger.logger) "TypeGenerators"
 
-//let createGenomeExplorer genome =
-//  logger.Log ("exploring %A") genome
-//  let latestAssemblies = Helpers.getLatestAssembliesFor(genome)
-//  let t = ProvidedTypeDefinition("Assemblies", Some typeof<GenbankAssemblies>, hideObjectMethods = true, nonNullable = true)
-//  t.AddMembersDelayed(fun () ->
-//    [for assembly in latestAssemblies do
-//      let name = assembly.name
-//      let file = assembly.file
-//      yield ProvidedProperty(
-//        name,
-//        typeof<GenbankAssembly>,
-//        getterCode = (fun (Helpers.Singleton arg) ->
-//          <@@ (%%arg : GenbankAssemblies).LoadAssembly(name, file) @@>)
-//      )
-//    ]
-//  )
-//  t
-
-let createTestType (assembly: Helpers.AssemblyLocation) () =
-  let t = ProvidedTypeDefinition(assembly.name, Some(typeof<obj>), hideObjectMethods = true, nonNullable = true)
-  Helpers.loadGenbankFile(assembly.file)(fun items ->
-    t.AddMember(ProvidedProperty("Loci", typeof<LociMap>, isStatic = true, getterCode = (fun _ -> <@@ LociMap(items) @@>)))
-    t.AddMembers(items |> Seq.map(fun item ->
+let createLociType (assembly: Helpers.AssemblyLocation) () =
+  let location = assembly.file
+  let lociType = ProvidedProperty("Loci", typeof<LociMap>, isStatic = true, getterCode = (fun _ -> <@@ LociMap(location) @@>))
+  lociType :: Helpers.loadGenbankFile(assembly.file)(fun items ->
+    items
+    |> Seq.map(fun item ->
       let data = item.Metadata.Item("GenBank") :?> GenBankMetadata
       let prop = ProvidedProperty(data.Locus.Name, typeof<GenBankMetadata>, isStatic = true, getterCode = (fun _ -> <@@ data @@>))
       let doc = sprintf "<summary>%s. %s. Keywords: %s</summary>" data.Locus.Name data.Definition data.Keywords
       prop.AddXmlDoc(doc)
       prop
-    ) |> Seq.toList)
-  )
-  t
-
-let createLociType (assembly: Helpers.AssemblyLocation) () =
-  let name = assembly.name
-  let file = assembly.file
-  Helpers.loadGenbankFile(assembly.file)(fun items ->
-    ProvidedProperty(
-      "Loci",
-      typeof<Loci>,
-      isStatic = true,
-      getterCode = (fun _ -> <@@ Loci(name, file, items) @@>)
     )
+    |> Seq.toList
   )
 
 let createAssemblyType genome () =
+  let locusType = ProvidedType
   Helpers.getLatestAssembliesFor(genome)
   |> List.map(fun assembly ->
     let name = assembly.name
     let t = ProvidedTypeDefinition(
               name,
-              None,
-              hideObjectMethods = true,
-              nonNullable = true
+              Some(typeof<obj>)
+              (* hideObjectMethods = true, *)
+              (* nonNullable = true *)
             )
     t.AddXmlDoc(sprintf("<summary>The genome for %s. Contains all loci for this genome.</summary>")(genome.name))
-    t.AddMemberDelayed(createTestType(assembly))
+    t.AddMembersDelayed(createLociType(assembly))
     t
   )
 
