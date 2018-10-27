@@ -12,7 +12,11 @@
       <Paket>True</Paket>
       <Link>paket-files/ProvidedTypes.fs</Link>
     </Compile>
+    <Compile Include="Logger.fs" />
     <Compile Include="Library.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Genbank.Shared\Genbank.Shared.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
