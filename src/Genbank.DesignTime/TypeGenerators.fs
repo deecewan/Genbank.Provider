@@ -9,13 +9,26 @@ open Bio.IO.GenBank
 let logger = Logger.createChild (Logger.logger) "TypeGenerators"
 
 let createLociType (assembly: Helpers.AssemblyLocation) () =
-  let location = assembly.file
-  let lociType = ProvidedProperty("Loci", typeof<LociMap>, isStatic = true, getterCode = (fun _ -> <@@ LociMap(location) @@>))
+  let assemblyName = assembly.name
+  let file = assembly.file
+  let lociType = ProvidedProperty(
+                   "Loci",
+                   typeof<LociMap>,
+                   isStatic = true,
+                   getterCode = (fun _ -> <@@ LociMap(file) @@>)
+                 )
   lociType :: Helpers.loadGenbankFile(assembly.file)(fun items ->
     items
     |> Seq.map(fun item ->
       let data = item.Metadata.Item("GenBank") :?> GenBankMetadata
-      let prop = ProvidedProperty(data.Locus.Name, typeof<GenBankMetadata>, isStatic = true, getterCode = (fun _ -> <@@ data @@>))
+      let name = data.Locus.Name
+      logger.Log("%s")(name)
+      let prop = ProvidedProperty(
+                  data.Locus.Name,
+                  typeof<string>,
+                  isStatic = true,
+                  getterCode = (fun _ -> <@@ AssemblyType(assemblyName, file).LoadLocus(name) @@>)
+                 )
       let doc = sprintf "<summary>%s. %s. Keywords: %s</summary>" data.Locus.Name data.Definition data.Keywords
       prop.AddXmlDoc(doc)
       prop
@@ -24,18 +37,18 @@ let createLociType (assembly: Helpers.AssemblyLocation) () =
   )
 
 let createAssemblyType genome () =
-  let locusType = ProvidedType
   Helpers.getLatestAssembliesFor(genome)
   |> List.map(fun assembly ->
     let name = assembly.name
     let t = ProvidedTypeDefinition(
               name,
-              Some(typeof<obj>)
-              (* hideObjectMethods = true, *)
-              (* nonNullable = true *)
+              Some(typeof<AssemblyType>),
+              hideObjectMethods = true,
+              nonNullable = true
             )
     t.AddXmlDoc(sprintf("<summary>The genome for %s. Contains all loci for this genome.</summary>")(genome.name))
     t.AddMembersDelayed(createLociType(assembly))
+
     t
   )
 
@@ -45,7 +58,7 @@ let createGenomeTypes taxon () =
   |> List.map(fun genome ->
     let prop = ProvidedTypeDefinition(genome.name, None, hideObjectMethods = true, nonNullable = true)
     prop.AddMembersDelayed(createAssemblyType genome)
-    prop.AddXmlDoc(sprintf "<summary>A list of assembiles for the %s</summary>" genome.name)
+    prop.AddXmlDoc(sprintf "<summary>A list of assemblies for the %s</summary>" genome.name)
     prop
   )
 

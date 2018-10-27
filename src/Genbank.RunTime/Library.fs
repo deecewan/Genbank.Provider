@@ -9,4 +9,12 @@ type LociMap (dataURL: string) =
   interface seq<string> with member __.GetEnumerator() = metadata.GetEnumerator()
   interface IEnumerable with member __.GetEnumerator() = metadata.GetEnumerator() :> _
 
-type TestType () = class end
+type AssemblyType (name: string, url: string) =
+  member __.Name = name;
+  member __.Location = url;
+
+  member __.LoadLocus(name: string) =
+    name
+
+  member this.LociMap() =
+    LociMap(this.Location)
